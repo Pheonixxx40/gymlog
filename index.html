@@ -90,7 +90,8 @@ let supabase=null,user=null,currentDay="mon",activeView="training",history=[],ed
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
 function setStatus(s){$("cloudStatus").textContent=s}
 function showOnly(view){["setupView","authView","appView"].forEach(id=>$(id).classList.toggle("hidden",id!==view))}
-function getConfig(){try{return JSON.parse(localStorage.getItem("gymlog_supabase_config")||"null")}catch{return null}}
+const DEFAULT_SUPABASE_CONFIG={url:"https://eguzznssowbfnvvankig.supabase.co",key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVndXp6bnNzb3diZm52dmFua2lnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNzM2MTEsImV4cCI6MjEwODc0OTYxMX0.YilPAqGgQt4gApdOBDW9T4PECnpoRSGDXS48gpFKZFk"};
+function getConfig(){try{return JSON.parse(localStorage.getItem("gymlog_supabase_config")||"null")||DEFAULT_SUPABASE_CONFIG}catch{return DEFAULT_SUPABASE_CONFIG}}
 function initClient(cfg){supabase=createClient(cfg.url,cfg.key)}
 function safeText(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function allCatalogOptions(selected){return Object.entries(catalog).map(([group,items])=>`<optgroup label="${safeText(group)}">${items.map(([name])=>`<option value="${safeText(name)}" ${name===selected?"selected":""}>${safeText(name)}</option>`).join("")}</optgroup>`).join("")}
