@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="lv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17324d">
+<meta name="description" content="GymLog — treniņu, kardio un progresa uzskaite mākonī.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>GymLog — tavs treniņu žurnāls</title>
+<style>
+:root{--navy:#17324d;--green:#2f7952;--bg:#f2f5f8;--line:#dce4ec;--muted:#657488;--ink:#172432;--blue:#e7f0fa;--red:#a82b2b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{background:var(--navy);color:white;padding:17px max(16px,calc((100vw - 800px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}header h1{margin:0;font-size:23px}header p{margin:3px 0 0;font-size:12px;color:#d6e2ef}.head-actions{display:flex;gap:8px;align-items:center}.head-actions button{white-space:nowrap}main{max-width:800px;margin:auto;padding:12px}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 2px 8px #17324d08}.hidden{display:none!important}.muted{color:var(--muted);font-size:13px;line-height:1.45}h2{font-size:19px;margin:0 0 8px}h3{font-size:15px;margin:0 0 9px}label{display:block;color:var(--muted);font-size:12px;font-weight:750;margin:0 0 5px}input,select,textarea{font:inherit;font-size:16px;color:var(--ink);width:100%;min-width:0;border:1px solid #cbd5e1;border-radius:10px;padding:10px;background:white}textarea{min-height:70px;resize:vertical}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.btn{border:0;border-radius:10px;padding:11px 13px;font:inherit;font-weight:750;cursor:pointer}.primary{background:var(--green);color:white}.dark{background:var(--navy);color:white}.soft{background:var(--blue);color:var(--navy)}.danger{background:#fff0f0;color:var(--red)}.small{padding:8px 10px;font-size:13px}.tabs{display:flex;gap:7px;overflow:auto;padding:3px 0 12px}.tabs button{border:1px solid var(--line);background:white;border-radius:30px;padding:10px 13px;white-space:nowrap;font-weight:750;color:var(--navy)}.tabs button.active{background:var(--navy);color:white}.exercise{border:1px solid var(--line);border-radius:12px;padding:11px;margin:9px 0}.exhead{display:flex;align-items:center;justify-content:space-between;gap:8px}.exname{font-size:14px;font-weight:800}.target{font-size:12px;color:var(--muted);margin:4px 0 8px}.setrow{display:grid;grid-template-columns:38px 1fr 1fr;gap:7px;align-items:center;margin-top:6px}.setrow span{font-size:12px;color:var(--muted)}.setrow input{padding:9px 7px}.check{display:flex;align-items:center;gap:8px;margin:10px 0}.check input{width:20px;height:20px}.notice{border-radius:10px;padding:10px 12px;background:#eaf5ed;color:#225e3c;font-size:13px}.error{background:#fff0f0;color:#9b2525}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.stat{background:var(--blue);border-radius:11px;padding:10px}.stat b{display:block;font-size:20px}.stat span{font-size:11px;color:var(--muted)}.history-item{border-bottom:1px solid var(--line);padding:12px 0}.history-item:last-child{border:0}.pill{display:inline-block;background:var(--blue);border-radius:20px;padding:4px 8px;font-size:11px;font-weight:800}.right{margin-left:auto}.status{font-size:12px;color:#d6e2ef}.footer{text-align:center;color:var(--muted);font-size:12px;padding:14px}
+@media(min-width:600px){main{padding:18px}.card{padding:18px}.exercise{padding:13px}}
+</style>
+</head>
+<body>
+<header>
+ <div><h1>💪 GymLog</h1><p>Muskuļi · Izturība · Prese · Tavs progress mākonī</p></div>
+ <div class="head-actions"><span id="cloudStatus" class="status">Nav pieslēgts</span><button id="signOutBtn" class="btn soft small hidden">Iziet</button></div>
+</header>
+<main>
+<section id="setupView" class="card hidden">
+ <h2>Vispirms pievieno mākoņdatubāzi</h2>
+ <p class="muted">GymLog izmanto Supabase autentifikācijai un drošai datu glabāšanai. Ievadi sava Supabase projekta URL un anon/public atslēgu. Šīs vērtības ir paredzētas klienta lietotnei; datu aizsardzību nodrošina datubāzes RLS politikas.</p>
+ <label>Supabase Project URL</label><input id="projectUrl" placeholder="https://xxxxxxxx.supabase.co" autocomplete="url">
+ <label style="margin-top:10px">Supabase anon/public key</label><input id="publicKey" placeholder="eyJ..." autocomplete="off">
+ <p class="muted">Vērtības iegūsi Supabase projektā: Project Settings → API. Nekad neliec šeit service_role atslēgu.</p>
+ <button id="saveConfig" class="btn primary" style="width:100%">Saglabāt iestatījumus</button>
+ <p id="setupMsg" class="muted"></p>
+</section>
+<section id="authView" class="card hidden">
+ <h2 id="authTitle">Pieslēgties GymLog</h2>
+ <p class="muted">Izveido kontu, lai tavi treniņu dati sinhronizētos starp ierīcēm.</p>
+ <label>E-pasts</label><input id="email" type="email" autocomplete="email" placeholder="tu@example.com">
+ <label style="margin-top:10px">Parole</label><input id="password" type="password" autocomplete="current-password" minlength="8" placeholder="Vismaz 8 rakstzīmes">
+ <div class="row" style="margin-top:12px"><button id="signInBtn" class="btn primary">Pieslēgties</button><button id="signUpBtn" class="btn soft">Izveidot kontu</button></div>
+ <p id="authMsg" class="muted" aria-live="polite"></p>
+ <button id="changeConfig" class="btn soft small">Mainīt datubāzes iestatījumus</button>
+</section>
+<section id="appView" class="hidden">
+ <div class="tabs" id="dayTabs"></div>
+ <div id="trainingView">
+  <div class="card"><h2 id="workoutTitle"></h2><p id="workoutSubtitle" class="muted"></p>
+   <div class="grid">
+    <div><label>Datums</label><input id="sessionDate" type="date"></div>
+    <div><label>Ķermeņa svars (kg)</label><input id="bodyweight" type="number" step=".1" inputmode="decimal" placeholder="Piem., 82.5"></div>
+    <div><label>Miegs (stundas)</label><input id="sleepHours" type="number" step=".25" inputmode="decimal" placeholder="7.5"></div>
+    <div><label>Enerģija (1–5)</label><select id="energy"><option value="">Izvēlies</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+   </div>
+  </div>
+  <div class="card"><h3>Kardio</h3><p id="cardioPlan" class="muted"></p><div class="grid">
+   <div><label>Faktiskās minūtes</label><input id="cardioMinutes" type="number" inputmode="numeric"></div>
+   <div><label>Vidējais pulss (bpm)</label><input id="avgHr" type="number" inputmode="numeric"></div>
+   <div><label>Maks. pulss (bpm)</label><input id="maxHr" type="number" inputmode="numeric"></div>
+   <div><label>Sesijas grūtība (1–10)</label><select id="sessionRpe"><option value="">Izvēlies</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div>
+  </div></div>
+  <div class="card"><h3>Spēka vingrinājumi</h3><p class="muted">Ievadi faktisko svaru un atkārtojumus katrā piegājienā. Vari izvēlēties, nomainīt vai pievienot vingrinājumus.</p><div id="exerciseList"></div><button id="addExerciseBtn" class="btn soft" style="width:100%">＋ Pievienot vingrinājumu</button></div>
+  <div class="card"><h3>Prese — vienmēr treniņa beigās</h3><p id="absPlan" class="muted"></p><label class="check"><input id="absDone" type="checkbox"> Prese izpildīta</label><label>Piezīmes / pašsajūta</label><textarea id="notes" placeholder="Rekordi, nogurums, ko uzlabot nākamreiz..."></textarea></div>
+  <button id="saveWorkoutBtn" class="btn primary" style="width:100%">Saglabāt treniņu mākonī</button><p id="saveMsg" class="muted" aria-live="polite"></p>
+ </div>
+ <div id="historyView" class="hidden">
+  <div class="card"><h2>Progresa vēsture</h2><div class="stats"><div class="stat"><b id="sessionCount">0</b><span>Treniņi</span></div><div class="stat"><b id="cardioTotal">0</b><span>Kardio minūtes</span></div><div class="stat"><b id="lastWeight">—</b><span>Pēdējais svars kg</span></div></div></div>
+  <div class="card"><h3>Iepriekšējie treniņi</h3><div id="historyList"></div></div>
+ </div>
+</section>
+<div class="footer">GymLog · Tavi dati ir pieejami tikai tavā kontā. Izmanto oficiālu HTTPS hostingu publicēšanai.</div>
+</main>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const catalog = {
+ "Krūtis":[["Spiešana guļus ar stieni","3 × 6–10"],["Spiešana slīpajā solā ar hantelēm","3 × 8–12"],["Krūšu spiešanas trenažieris","3 × 8–12"],["Kabeļu krustvilkšana","3 × 12–15"],["Atspiešanās","3 × 10–20"]],
+ "Mugura":[["Pievilkšanās pie stieņa","3 × 6–10"],["Augšējā bloka vilkšana","3 × 8–12"],["Horizontālā bloka vilkšana","3 × 8–12"],["Airēšana ar krūtīm atbalstītām hantelēm","3 × 8–12"],["Taisnu roku bloka vilkšana","2 × 12–15"]],
+ "Pleci":[["Plecu spiešana ar hantelēm","3 × 8–12"],["Sānu pacēlieni ar hantelēm","3 × 12–15"],["Sānu pacēlieni trosē","3 × 12–15"],["Aizmugurējo deltu trenažieris","3 × 12–15"]],
+ "Rokas":[["Bicepsa saliekšana ar EZ stieni","3 × 10–12"],["Bicepsa saliekšana ar hantelēm","3 × 10–12"],["Āmura satvēriens","2 × 10–15"],["Tricepsa spiešana trosē","3 × 10–15"],["Tricepsa iztaisnošana virs galvas trosē","3 × 10–15"]],
+ "Kājas / sēža":[["Pietupiens ar stieni","3 × 5–8"],["Kāju spiešana trenažierī","3 × 8–12"],["Hack squat","3 × 8–12"],["Rumāņu vilkme","3 × 8–10"],["Gūžas pacelšana ar stieni","3 × 8–12"],["Bulgāru pietupiens","2 × 8–10/kāja"],["Kāju saliekšana trenažierī","3 × 10–15"],["Kāju iztaisnošana trenažierī","2 × 12–15"],["Ikru pacelšana stāvus","3 × 12–15"],["Ikru pacelšana sēdus","3 × 12–15"]],
+ "Prese":[["Kabeļa crunch","3 × 12–15"],["Ceļu pacelšana piekārienā","3 × 10–15"],["Ab-wheel rullītis","3 × 8–12"],["Reversais crunch","3 × 12–15"],["Planks","3 × 30–60 sek"],["Sānu planks","2 × 30–45 sek/puse"],["Pallof press","2 × 12/puse"]],
+ "Kardio / mobilitāte":[["Velotrenažieris — Zone 2","1 × 35–45 min"],["Eliptiskais trenažieris — Zone 2","1 × 35–45 min"],["Slīpais skrejceliņš — Zone 2","1 × 35–45 min"],["Velotrenažieris — intervāli","1 × 15 min"],["Mobilitāte","1 × 5–10 min"]]
+};
+const days=[
+{id:"mon",short:"Pirmd.",title:"Pirmdiena — Augšdaļa A",sub:"Krūtis, mugura, pleci, rokas",cardio:"12 min Zone 2 uz velotrenažiera.",abs:"Kabeļa crunch 3×12–15 · Ceļu pacelšana 2×12–15",ex:[["Spiešana slīpajā solā ar hantelēm","3 × 8–12"],["Pievilkšanās pie stieņa","3 × 6–10"],["Spiešana guļus ar hantelēm","3 × 8–10"],["Horizontālā bloka vilkšana","3 × 8–12"],["Sānu pacēlieni ar hantelēm","3 × 12–15"],["Bicepsa saliekšana ar EZ stieni","2 × 10–12"],["Tricepsa spiešana trosē","2 × 10–12"]]},
+{id:"tue",short:"Otrd.",title:"Otrdiena — Kājas A",sub:"Uzsvars uz kvadricepsiem, sēžu un hamstringiem",cardio:"10 min viegla riteņbraukšana.",abs:"Ab-wheel 3×8–12 · Sānu planks 2×30–45 sek/puse",ex:[["Pietupiens ar stieni","3 × 5–8"],["Hack squat","3 × 8–12"],["Rumāņu vilkme","3 × 8–10"],["Kāju saliekšana trenažierī","3 × 10–12"],["Kāju iztaisnošana trenažierī","2 × 12–15"],["Ikru pacelšana stāvus","3 × 10–15"]]},
+{id:"wed",short:"Trešd.",title:"Trešdiena — Izturība",sub:"Aerobā bāze un mobilitāte",cardio:"5 min iesildīšanās + 35–45 min Zone 2 + 5 min atdzišana. Jāspēj runāt pilnos teikumos.",abs:"Reversais crunch 3×12–15 · Pallof press 2×12/puse",ex:[["Velotrenažieris — Zone 2","1 × 35–45 min"],["Mobilitāte","1 × 5–10 min"]]},
+{id:"thu",short:"Ceturtd.",title:"Ceturtdiena — Augšdaļa B",sub:"Uzsvars uz muguru un pleciem",cardio:"15 min velo intervāli: 3 min viegli, 5 × (1 min grūti + 1 min viegli), 2 min viegli.",abs:"Ceļu pacelšana 3×12–15 · Kabeļa rotācijas 2×12/puse",ex:[["Plecu spiešana ar hantelēm","3 × 6–10"],["Augšējā bloka vilkšana","3 × 8–12"],["Krūšu spiešanas trenažieris","3 × 8–12"],["Airēšana ar vienu roku trosē","3 × 10–12/puse"],["Aizmugurējo deltu trenažieris","3 × 12–15"],["Bicepsa saliekšana ar hantelēm","2 × 10–12"],["Tricepsa iztaisnošana virs galvas trosē","2 × 10–15"]]},
+{id:"sat",short:"Sestd.",title:"Sestdiena — Kājas B + papildvingrinājumi",sub:"Aizmugurējā ķēde, kājas, krūtis un mugura",cardio:"12 min Zone 2 uz velotrenažiera vai eliptiskā trenažiera.",abs:"Crunch ar papildu svaru 3×10–15 · Dead bug 2×10/puse",ex:[["Gūžas pacelšana ar stieni","3 × 8–10"],["Bulgāru pietupiens","3 × 8–10/kāja"],["Kāju saliekšana trenažierī","3 × 10–15"],["Kāju spiešana trenažierī","2 × 10–12"],["Ikru pacelšana sēdus","3 × 12–15"],["Krūšu spiešanas trenažieris","2 × 10–12"],["Taisnu roku bloka vilkšana","2 × 12–15"]]}
+];
+const $=id=>document.getElementById(id);
+let supabase=null,user=null,currentDay="mon",activeView="training",history=[],editingId=null,exerciseDraft=[];
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+function setStatus(s){$("cloudStatus").textContent=s}
+function showOnly(view){["setupView","authView","appView"].forEach(id=>$(id).classList.toggle("hidden",id!==view))}
+function getConfig(){try{return JSON.parse(localStorage.getItem("gymlog_supabase_config")||"null")}catch{return null}}
+function initClient(cfg){supabase=createClient(cfg.url,cfg.key)}
+function safeText(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function allCatalogOptions(selected){return Object.entries(catalog).map(([group,items])=>`<optgroup label="${safeText(group)}">${items.map(([name])=>`<option value="${safeText(name)}" ${name===selected?"selected":""}>${safeText(name)}</option>`).join("")}</optgroup>`).join("")}
+function setDayTabs(){ $("dayTabs").innerHTML=days.map(d=>`<button class="${activeView==="training"&&currentDay===d.id?"active":""}" data-day="${d.id}">${d.short}</button>`).join("")+`<button class="${activeView==="history"?"active":""}" data-view="history">📈 Vēsture</button>`;$("dayTabs").querySelectorAll("button").forEach(b=>b.onclick=()=>b.dataset.view==="history"?showHistory():showTraining(b.dataset.day))}
+function defaultExercises(day){return day.ex.map(([name,target])=>({name,target,sets:[]}))}
+function renderExercises(){
+ const list=$("exerciseList");
+ list.innerHTML=exerciseDraft.map((ex,i)=>`<div class="exercise" data-i="${i}">
+  <div class="exhead"><span class="pill">#${i+1}</span><button type="button" class="btn danger small remove-ex" data-i="${i}">Noņemt</button></div>
+  <label style="margin-top:8px">Vingrinājums</label><select class="ex-select" data-i="${i}">${allCatalogOptions(ex.name)}<option value="__custom" ${!Object.values(catalog).flat().some(a=>a[0]===ex.name)?"selected":""}>Cits — ievadīt savu</option></select>
+  <div class="custom-name-wrap ${!Object.values(catalog).flat().some(a=>a[0]===ex.name)?"":"hidden"}" data-i="${i}" style="margin-top:8px"><label>Vingrinājuma nosaukums</label><input class="custom-name" data-i="${i}" value="${!Object.values(catalog).flat().some(a=>a[0]===ex.name)?safeText(ex.name):""}" placeholder="Ieraksti nosaukumu"></div>
+  <div style="margin-top:8px"><label>Seti × atkārtojumi</label><input class="ex-target" data-i="${i}" value="${safeText(ex.target||"3 × 10–12")}" placeholder="3 × 10–12"></div>
+  ${[0,1,2,3].map(s=>`<div class="setrow"><span>Sets ${s+1}</span><input type="number" step=".5" inputmode="decimal" placeholder="kg" data-i="${i}" data-s="${s}" data-f="kg" value="${safeText(ex.sets?.[s]?.kg||"")}"><input type="text" inputmode="decimal" placeholder="atkārtojumi" data-i="${i}" data-s="${s}" data-f="reps" value="${safeText(ex.sets?.[s]?.reps||"")}"></div>`).join("")}
+ </div>`).join("");
+ list.querySelectorAll(".ex-select").forEach(el=>el.onchange=()=>{const i=+el.dataset.i,custom=el.value==="__custom";if(!custom){const found=Object.values(catalog).flat().find(a=>a[0]===el.value);exerciseDraft[i].name=el.value;if(found)exerciseDraft[i].target=found[1];renderExercises()}else{exerciseDraft[i].name="";renderExercises();list.querySelector(`.custom-name[data-i="${i}"]`)?.focus()}});
+ list.querySelectorAll(".custom-name").forEach(el=>el.oninput=()=>{exerciseDraft[+el.dataset.i].name=el.value});
+ list.querySelectorAll(".ex-target").forEach(el=>el.oninput=()=>exerciseDraft[+el.dataset.i].target=el.value);
+ list.querySelectorAll(".setrow input").forEach(el=>el.oninput=()=>{const ex=exerciseDraft[+el.dataset.i];ex.sets=ex.sets||[];ex.sets[+el.dataset.s]=ex.sets[+el.dataset.s]||{};ex.sets[+el.dataset.s][el.dataset.f]=el.value});
+ list.querySelectorAll(".remove-ex").forEach(el=>el.onclick=()=>{exerciseDraft.splice(+el.dataset.i,1);renderExercises()});
+}
+function showTraining(id,record=null){activeView="training";currentDay=id;editingId=record?.id||null;setDayTabs();$("trainingView").classList.remove("hidden");$("historyView").classList.add("hidden");const d=days.find(x=>x.id===id);$("workoutTitle").textContent=d.title;$("workoutSubtitle").textContent=d.sub;$("cardioPlan").textContent=d.cardio;$("absPlan").textContent=d.abs;
+ $("sessionDate").value=record?.session_date||today();$("bodyweight").value=record?.bodyweight_kg??"";$("sleepHours").value=record?.sleep_hours??"";$("energy").value=record?.energy??"";$("cardioMinutes").value=record?.cardio_minutes??"";$("avgHr").value=record?.avg_hr??"";$("maxHr").value=record?.max_hr??"";$("sessionRpe").value=record?.session_rpe??"";$("absDone").checked=!!record?.abs_done;$("notes").value=record?.notes||"";exerciseDraft=record?.exercises||defaultExercises(d);renderExercises();$("saveMsg").textContent="";$("saveWorkoutBtn").textContent=record?"Atjaunināt treniņu mākonī":"Saglabāt treniņu mākonī";}
+$("addExerciseBtn").onclick=()=>{exerciseDraft.push({name:"",target:"3 × 10–12",sets:[]});renderExercises();$("exerciseList").lastElementChild?.scrollIntoView({behavior:"smooth",block:"center"})};
+function formRecord(){return {user_id:user.id,session_date:$("sessionDate").value||today(),day_key:currentDay,workout_name:days.find(d=>d.id===currentDay).title,bodyweight_kg:$("bodyweight").value?Number($("bodyweight").value):null,sleep_hours:$("sleepHours").value?Number($("sleepHours").value):null,energy:$("energy").value?Number($("energy").value):null,cardio_minutes:$("cardioMinutes").value?Number($("cardioMinutes").value):null,avg_hr:$("avgHr").value?Number($("avgHr").value):null,max_hr:$("maxHr").value?Number($("maxHr").value):null,session_rpe:$("sessionRpe").value?Number($("sessionRpe").value):null,abs_done:$("absDone").checked,notes:$("notes").value,exercises:exerciseDraft.map(e=>({name:e.name,target:e.target,sets:e.sets||[]}))}}
+async function saveWorkout(){if(!user||!supabase)return;const btn=$("saveWorkoutBtn");btn.disabled=true;btn.textContent="Saglabā mākonī…";$("saveMsg").textContent="";
+ try{const payload=formRecord();let query;if(editingId){query=await supabase.from("workout_sessions").update(payload).eq("id",editingId).select().single()}else{query=await supabase.from("workout_sessions").insert(payload).select().single()}if(query.error)throw query.error;editingId=query.data.id;$("saveMsg").innerHTML='<span class="notice">✓ Treniņš saglabāts mākonī. Tas būs pieejams pēc pieslēgšanās arī citā ierīcē.</span>';await loadHistory()}catch(e){$("saveMsg").innerHTML=`<span class="notice error">Neizdevās saglabāt: ${safeText(e.message||"pārbaudi savienojumu un datubāzes iestatījumus")}.</span>`}finally{btn.disabled=false;btn.textContent="Saglabāt treniņu mākonī"}}
+$("saveWorkoutBtn").onclick=saveWorkout;
+async function loadHistory(){const {data,error}=await supabase.from("workout_sessions").select("*").order("session_date",{ascending:false}).order("created_at",{ascending:false});if(error)throw error;history=data||[];renderHistory()}
+function showHistory(){activeView="history";setDayTabs();$("trainingView").classList.add("hidden");$("historyView").classList.remove("hidden");loadHistory().then(renderHistory).catch(e=>$("historyList").textContent="Neizdevās ielādēt vēsturi: "+e.message)}
+function renderHistory(){if(!$("historyView").classList.contains("hidden")){}$("sessionCount").textContent=history.length;$("cardioTotal").textContent=history.reduce((n,r)=>n+(r.cardio_minutes||0),0);const w=history.find(r=>r.bodyweight_kg!=null);$("lastWeight").textContent=w?w.bodyweight_kg:"—";$("historyList").innerHTML=history.length?history.map(r=>`<div class="history-item"><strong>${safeText(r.session_date)} · ${safeText(r.workout_name)}</strong><p class="muted">${r.bodyweight_kg!=null?"Svars "+r.bodyweight_kg+" kg · ":""}${r.cardio_minutes!=null?"Kardio "+r.cardio_minutes+" min · ":""}${r.avg_hr!=null?"Vid. pulss "+r.avg_hr+" bpm · ":""}Prese ${r.abs_done?"✓":"—"}</p><div class="row"><button class="btn soft small" data-edit="${r.id}">Atvērt / labot</button><button class="btn danger small" data-delete="${r.id}">Dzēst</button></div></div>`).join(""):'<p class="muted">Vēl nav saglabātu treniņu. Pēc treniņa saglabā ierakstu.</p>';$("historyList").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{const r=history.find(x=>x.id===b.dataset.edit);showTraining(r.day_key,r)});$("historyList").querySelectorAll("[data-delete]").forEach(b=>b.onclick=async()=>{if(!confirm("Dzēst šo treniņu no mākoņa?"))return;const {error}=await supabase.from("workout_sessions").delete().eq("id",b.dataset.delete);if(error)alert("Neizdevās dzēst: "+error.message);else{await loadHistory();renderHistory()}})}
+async function boot(){const cfg=getConfig();if(!cfg){showOnly("setupView");return}try{initClient(cfg);const {data:{session},error}=await supabase.auth.getSession();if(error)throw error;if(session){user=session.user;await enterApp()}else{showOnly("authView");setStatus("Nav pieslēgts")};supabase.auth.onAuthStateChange(async(_event,session)=>{if(session){user=session.user;await enterApp()}else{user=null;showOnly("authView");setStatus("Nav pieslēgts");$("signOutBtn").classList.add("hidden")}})}catch(e){showOnly("setupView");$("setupMsg").textContent="Neizdevās pieslēgties: "+e.message}}
+async function enterApp(){showOnly("appView");$("signOutBtn").classList.remove("hidden");setStatus("☁ Sinhronizēts");showTraining(currentDay);try{await loadHistory()}catch(e){$("saveMsg").textContent="Datubāze vēl nav gatava. Pārbaudi SQL iestatīšanu."}}
+$("saveConfig").onclick=()=>{const url=$("projectUrl").value.trim().replace(/\/$/,""),key=$("publicKey").value.trim();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)||!key){$("setupMsg").textContent="Ievadi derīgu Supabase Project URL un anon/public atslēgu.";return}localStorage.setItem("gymlog_supabase_config",JSON.stringify({url,key}));$("setupMsg").textContent="Iestatījumi saglabāti.";boot()};
+$("changeConfig").onclick=()=>{const c=getConfig();$("projectUrl").value=c?.url||"";$("publicKey").value=c?.key||"";showOnly("setupView")};
+$("signInBtn").onclick=async()=>{const email=$("email").value.trim(),password=$("password").value;$("authMsg").textContent="Pieslēdzas…";const {error}=await supabase.auth.signInWithPassword({email,password});$("authMsg").textContent=error?error.message:"Pieslēgšanās veiksmīga."};
+$("signUpBtn").onclick=async()=>{const email=$("email").value.trim(),password=$("password").value;if(password.length<8){$("authMsg").textContent="Parolei jābūt vismaz 8 rakstzīmēm.";return}$("authMsg").textContent="Veido kontu…";const {data,error}=await supabase.auth.signUp({email,password});$("authMsg").textContent=error?error.message:(data.session?"Konts izveidots.":"Pārbaudi e-pastu un apstiprini reģistrāciju, pēc tam pieslēdzies.")};
+$("signOutBtn").onclick=async()=>{await supabase.auth.signOut();setStatus("Izrakstīts")};
+const cfg=getConfig();if(cfg){$("projectUrl").value=cfg.url;$("publicKey").value=cfg.key}boot();
+if("serviceWorker" in navigator && location.protocol.startsWith("http"))window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+</script>
+</body></html>
